@@ -26,12 +26,13 @@ func TestParseEmptyInvalid(t *testing.T) {
 	if err != nil {
 		t.Errorf("File could not be opened")
 	}
-	_, got := Parse(string(data))
+	obj, got := Parse(string(data))
 	want := 1
 	if got != want {
 		t.Errorf("Got %q wanted %q for file data %s", got, want, string(data))
 	} else {
 		fmt.Printf("Got %q wanted %q for file data %s", got, want, string(data))
+		fmt.Print(obj)
 	}
 }
 
@@ -40,25 +41,28 @@ func TestParseSimpleKeyValue(t *testing.T) {
 	if err != nil {
 		t.Errorf("File could not be opened")
 	}
-	_, got := Parse(string(data))
+	obj, got := Parse(string(data))
 	want := 0
 	if got != want {
 		t.Errorf("Got %q wanted %q for file data %s", got, want, string(data))
 	} else {
-		fmt.Printf("Got %q wanted %q for file data %s", got, want, string(data))
+		fmt.Printf("Got %q wanted %q for file data %s.\n", got, want, string(data))
+		fmt.Print(obj)
 	}
 }
+
 func TestParseSimpleKeyValueInvalid(t *testing.T) {
 	data, err := os.ReadFile("./step2/invalid.json")
 	if err != nil {
 		t.Errorf("File could not be opened")
 	}
-	_, got := Parse(string(data))
+	obj, got := Parse(string(data))
 	want := 1
 	if got != want {
 		t.Errorf("Got %q wanted %q for file data %s", got, want, string(data))
 	} else {
 		fmt.Printf("Got %q wanted %q for file data %s", got, want, string(data))
+		fmt.Print(obj)
 	}
 }
 

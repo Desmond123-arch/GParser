@@ -15,14 +15,13 @@ func Tokenize(str string) []Token {
 	tokens := make([]Token, 0)
 	insideQuotes := false
 	temp_str := ""
-	isKey := true
 
 	for idx := range str {
 		val := string(str[idx])
 		// fmt.Println(val)
 
 		//skip spaces and newlines
-		if val == " " || val == "\n"{
+		if val == " " || val == "\n" || len(val) == 0 {
 			continue
 		}
 
@@ -34,41 +33,35 @@ func Tokenize(str string) []Token {
 
 		//ending braces
 		if val == "}" {
+			if len(temp_str) > 0 {
+				tokens = append(tokens, Token{Type: "VALUE", Value: temp_str})
+			}
 			tokens = append(tokens, Token{Type: "END_OBJECT"})
 			continue
 		}
+		// comma
 		if val == "," {
+			if len(temp_str) > 0 {
+				tokens = append(tokens, Token{Type: "VALUE", Value: temp_str})
+				temp_str = ""
+			}
 			tokens = append(tokens, Token{Type: "COMMA"})
 			continue
 		}
-		//handle quotes
-		if val == "\"" {
-			insideQuotes = !insideQuotes
-			if val != " " && !insideQuotes {
-				if temp_str != "" {
-					if isKey {
-						tokens = append(tokens, Token{Type: "KEY", Value: temp_str})
-					} else {
-						tokens = append(tokens, Token{Type: "VALUE", Value: temp_str})
-					}
-				}
-				temp_str = ""
-				isKey = !isKey
-				continue
-			}
-			continue
-		}
+
+		// colons
 		if val == ":" && !insideQuotes {
+			tokens = append(tokens, Token{Type: "KEY", Value: temp_str})
+			temp_str = ""
 			tokens = append(tokens, Token{Type: "COLON"})
 			continue
 		}
-		temp_str += val
-	}
-	if temp_str != "" {
-		if isKey {
-			tokens = append(tokens, Token{Type: "KEY", Value: temp_str})
-		} else {
-			tokens = append(tokens, Token{Type: "VALUE", Value: temp_str})
+		if val == "\"" {
+			insideQuotes = !insideQuotes
+		}
+
+		if val != "" {
+			temp_str += val
 		}
 	}
 	for idx := range tokens {
@@ -100,10 +93,12 @@ func Parse(str string) (map[string]interface{}, int) {
 
 		case "KEY":
 			key := i.Value
+
 			key_val_stack = append(key_val_stack, key)
 
 		case "VALUE":
 			value := i.Value
+
 			key := key_val_stack[len(key_val_stack)-1]
 			mainObject[key] = value
 			key_val_stack = key_val_stack[:len(key_val_stack)-1]
@@ -115,6 +110,7 @@ func Parse(str string) (map[string]interface{}, int) {
 				}
 				continue
 			} else {
+
 				return nil, 1
 			}
 
