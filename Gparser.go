@@ -2,6 +2,7 @@ package gParser
 
 import (
 	"fmt"
+	"regexp"
 )
 
 //import "fmt"
@@ -78,7 +79,10 @@ func Parse(str string) (map[string]interface{}, int) {
 	mainObject := make(map[string]interface{})
 	stack := []map[string]interface{}{}
 	key_val_stack := make([]string, 0)
+
+	validKey := regexp.MustCompile(`^".*"$`)
 	for idx, i := range stream {
+
 		switch i.Type {
 		case "START_OBJECT":
 			mainObject = make(map[string]interface{})
@@ -93,8 +97,12 @@ func Parse(str string) (map[string]interface{}, int) {
 
 		case "KEY":
 			key := i.Value
-
-			key_val_stack = append(key_val_stack, key)
+			fmt.Println(key,validKey.MatchString(key))
+			if validKey.MatchString(key) {
+				key_val_stack = append(key_val_stack, key)
+			} else {
+				return nil, 1
+			}
 
 		case "VALUE":
 			value := i.Value
