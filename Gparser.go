@@ -82,12 +82,11 @@ func Parse(str string) (map[string]interface{}, int) {
 	stack := []map[string]interface{}{}
 	key_val_stack := make([]string, 0)
 
-	validKey := regexp.MustCompile(`^".*"$`)
+	validString := regexp.MustCompile(`^".*"$`)
 	intRegex := regexp.MustCompile(`^-?\d+$`)
 	floatRegex := regexp.MustCompile(`^-?\d+(\.\d+)?$`)
 	booleanRegex := regexp.MustCompile(`^(true|false)$`)
 	nullRegex := regexp.MustCompile(`null`)
-
 	for idx, i := range stream {
 
 		switch i.Type {
@@ -104,8 +103,8 @@ func Parse(str string) (map[string]interface{}, int) {
 
 		case "KEY":
 			key := i.Value
-			fmt.Println(key, validKey.MatchString(key))
-			if validKey.MatchString(key) {
+			fmt.Println(key, validString.MatchString(key))
+			if validString.MatchString(key) {
 				new_val := strings.ReplaceAll(i.Value, "\"", "")
 				key_val_stack = append(key_val_stack, new_val)
 			} else {
@@ -116,33 +115,38 @@ func Parse(str string) (map[string]interface{}, int) {
 			inputValue := strings.ReplaceAll(i.Value, "\"", "")
 			fmt.Println(inputValue)
 			var val interface{}
-			switch {
-			//for ints
-			case intRegex.MatchString(inputValue):
-				value, err := strconv.Atoi(i.Value)
-				if err != nil {
-					return nil, 1
-				}
-				val = value
-				// booleans
-			case booleanRegex.MatchString(inputValue):
-				value, err := strconv.ParseBool(inputValue)
-				if err != nil {
-					return nil, 1
-				}
-				val = value
-			case floatRegex.MatchString(inputValue):
-				value, err := strconv.ParseFloat(inputValue, 64)
-				if err != nil {
-					return nil, 1
-				}
-				val = value
-			case nullRegex.MatchString(inputValue):
-				val = nil
-			default:
+			if validString.MatchString(i.Value) {
 				val = inputValue
-			}
+			} else {
+				switch {
 
+				//for ints
+				case intRegex.MatchString(inputValue):
+					value, err := strconv.Atoi(i.Value)
+					if err != nil {
+						return nil, 1
+					}
+					val = value
+					// booleans
+				case booleanRegex.MatchString(inputValue):
+					value, err := strconv.ParseBool(inputValue)
+					if err != nil {
+						return nil, 1
+					}
+					val = value
+				case floatRegex.MatchString(inputValue):
+					value, err := strconv.ParseFloat(inputValue, 64)
+					if err != nil {
+						return nil, 1
+					}
+					val = value
+				case nullRegex.MatchString(inputValue):
+					val = nil
+
+				default:
+					return nil, 1
+				}
+			}
 			key := key_val_stack[len(key_val_stack)-1]
 			mainObject[key] = val
 			key_val_stack = key_val_stack[:len(key_val_stack)-1]
