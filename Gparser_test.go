@@ -47,7 +47,10 @@ func TestParseSimpleKeyValue(t *testing.T) {
 		t.Errorf("Got %q wanted %q for file data %s", got, want, string(data))
 	} else {
 		fmt.Printf("Got %q wanted %q for file data %s.\n", got, want, string(data))
-		fmt.Print(obj)
+		// for key, val := range obj {
+		// 	fmt.Println(key, val)
+		// }
+		fmt.Println(obj)
 	}
 }
 

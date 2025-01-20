@@ -3,6 +3,8 @@ package gParser
 import (
 	"fmt"
 	"regexp"
+	"strconv"
+	"strings"
 )
 
 //import "fmt"
@@ -81,6 +83,11 @@ func Parse(str string) (map[string]interface{}, int) {
 	key_val_stack := make([]string, 0)
 
 	validKey := regexp.MustCompile(`^".*"$`)
+	intRegex := regexp.MustCompile(`^-?\d+$`)
+	floatRegex := regexp.MustCompile(`^-?\d+(\.\d+)?$`)
+	booleanRegex := regexp.MustCompile(`^(true|false)$`)
+	nullRegex := regexp.MustCompile(`null`)
+
 	for idx, i := range stream {
 
 		switch i.Type {
@@ -97,18 +104,47 @@ func Parse(str string) (map[string]interface{}, int) {
 
 		case "KEY":
 			key := i.Value
-			fmt.Println(key,validKey.MatchString(key))
+			fmt.Println(key, validKey.MatchString(key))
 			if validKey.MatchString(key) {
-				key_val_stack = append(key_val_stack, key)
+				new_val := strings.ReplaceAll(i.Value, "\"", "")
+				key_val_stack = append(key_val_stack, new_val)
 			} else {
 				return nil, 1
 			}
 
 		case "VALUE":
-			value := i.Value
+			inputValue := strings.ReplaceAll(i.Value, "\"", "")
+			fmt.Println(inputValue)
+			var val interface{}
+			switch {
+			//for ints
+			case intRegex.MatchString(inputValue):
+				value, err := strconv.Atoi(i.Value)
+				if err != nil {
+					return nil, 1
+				}
+				val = value
+				// booleans
+			case booleanRegex.MatchString(inputValue):
+				value, err := strconv.ParseBool(inputValue)
+				if err != nil {
+					return nil, 1
+				}
+				val = value
+			case floatRegex.MatchString(inputValue):
+				value, err := strconv.ParseFloat(inputValue, 64)
+				if err != nil {
+					return nil, 1
+				}
+				val = value
+			case nullRegex.MatchString(inputValue):
+				val = nil
+			default:
+				val = inputValue
+			}
 
 			key := key_val_stack[len(key_val_stack)-1]
-			mainObject[key] = value
+			mainObject[key] = val
 			key_val_stack = key_val_stack[:len(key_val_stack)-1]
 
 		case "COLON":
