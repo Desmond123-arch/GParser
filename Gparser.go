@@ -90,7 +90,7 @@ func Parse(str string) (map[string]interface{}, int) {
 		return nil, 1
 	}
 	stream := Tokenize(str)
-	fmt.Println(stream)
+	// fmt.Println(stream)
 	mainObject := make(map[string]interface{})
 	var currentObject map[string]interface{}
 	stack := []map[string]interface{}{}
